@@ -1,6 +1,4 @@
-#ifdef HAVE_MALLOC_H
-# include<malloc.h>
-#endif
+#include<malloc.h>
 #include<math.h>
 #include<stdio.h>
 #include<stdlib.h>
@@ -62,6 +60,7 @@ int nrl,nrh,ncl,nch;
        /*allocate rows and set pointers to them */
         for(i=nrl;i<=nrh;i++) {
                       m[i]=(int *)malloc((unsigned) (nch-ncl+1)*sizeof(int));
+      m[i] -= ncl;
       }
        /* return pointer to array of pointers to rows */
         return m;
@@ -465,7 +464,8 @@ main()
      fp1=fopen("streampowertopo","w");
      lattice_size_x=250;
      lattice_size_y=250;
-     U=1;                /* m/kyr */
+     idum=-678;
+	 U=1;                /* m/kyr */
      K=0.05;             /* kyr^-1 */
      printinterval=100;
      deltax=200.0;       /* m */
