@@ -47,44 +47,42 @@ void free_vector(float *v, long nl, long nh)
         free((FREE_ARG) (v+nl-NR_END));
 }
 
-int **imatrix(nrl,nrh,ncl,nch)
-int nrl,nrh,ncl,nch;
-/* allocate an int matrix with subscript range m[nrl..nrh][ncl..nch] */
+int **imatrix(long nrl, long nrh, long ncl, long nch)
+/* allocate a int matrix with subscript range m[nrl..nrh][ncl..nch] */
 {
-      int  i,**m;
+	long i, nrow=nrh-nrl+1,ncol=nch-ncl+1;
+	int **m;
 
-       /*allocate pointers to rows */
-        m=(int **)malloc((unsigned) (nrh-nrl+1)*sizeof(int*));
-      m -= nrl;
+	m=(int **) malloc((size_t)((nrow+NR_END)*sizeof(int*)));
+	m += NR_END;
+	m -= nrl;
 
-       /*allocate rows and set pointers to them */
-        for(i=nrl;i<=nrh;i++) {
-                      m[i]=(int *)malloc((unsigned) (nch-ncl+1)*sizeof(int));
-      m[i] -= ncl;
-      }
-       /* return pointer to array of pointers to rows */
-        return m;
+	m[nrl]=(int *) malloc((size_t)((nrow*ncol+NR_END)*sizeof(int)));
+	m[nrl] += NR_END;
+	m[nrl] -= ncl;
+
+	for(i=nrl+1;i<=nrh;i++) m[i]=m[i-1]+ncol;
+
+	return m;
 }
 
-float **matrix(nrl,nrh,ncl,nch)
-int nrl,nrh,ncl,nch;
+float **matrix(long nrl, long nrh, long ncl, long nch)
 /* allocate a float matrix with subscript range m[nrl..nrh][ncl..nch] */
 {
-    int i;
-    float **m;
+	long i, nrow=nrh-nrl+1,ncol=nch-ncl+1;
+	float **m;
 
-        /*allocate pointers to rows */
-        m=(float **) malloc((unsigned) (nrh-nrl+1)*sizeof(float*));
-    m -= nrl;
+	m=(float **) malloc((size_t)((nrow+NR_END)*sizeof(float*)));
+	m += NR_END;
+	m -= nrl;
 
-   /*allocate rows and set pointers to them */
-      for(i=nrl;i<=nrh;i++) {
-                      m[i]=(float *) malloc((unsigned) (nch-ncl+1)*sizeof(float)
-);
-            m[i] -= ncl;
-    }
-      /* return pointer to array of pointers to rows */
-      return m;
+	m[nrl]=(float *) malloc((size_t)((nrow*ncol+NR_END)*sizeof(float)));
+	m[nrl] += NR_END;
+	m[nrl] -= ncl;
+
+	for(i=nrl+1;i<=nrh;i++) m[i]=m[i-1]+ncol;
+
+	return m;
 }
 
 #define MBIG 1000000000
@@ -296,46 +294,46 @@ int i,j;
 void mfdflowroute(i,j)
 int i,j;
 {    float tot;
- 
+
      tot=0;
-     if (topo[i][j]>topo[iup[i]][j]) 
+     if (topo[i][j]>topo[iup[i]][j])
       tot+=pow(topo[i][j]-topo[iup[i]][j],1.1);
-     if (topo[i][j]>topo[idown[i]][j]) 
+     if (topo[i][j]>topo[idown[i]][j])
       tot+=pow(topo[i][j]-topo[idown[i]][j],1.1);
-     if (topo[i][j]>topo[i][jup[j]]) 
+     if (topo[i][j]>topo[i][jup[j]])
       tot+=pow(topo[i][j]-topo[i][jup[j]],1.1);
-     if (topo[i][j]>topo[i][jdown[j]]) 
+     if (topo[i][j]>topo[i][jdown[j]])
       tot+=pow(topo[i][j]-topo[i][jdown[j]],1.1);
-     if (topo[i][j]>topo[iup[i]][jup[j]]) 
+     if (topo[i][j]>topo[iup[i]][jup[j]])
       tot+=pow((topo[i][j]-topo[iup[i]][jup[j]])*oneoversqrt2,1.1);
-     if (topo[i][j]>topo[iup[i]][jdown[j]]) 
+     if (topo[i][j]>topo[iup[i]][jdown[j]])
       tot+=pow((topo[i][j]-topo[iup[i]][jdown[j]])*oneoversqrt2,1.1);
-     if (topo[i][j]>topo[idown[i]][jup[j]]) 
+     if (topo[i][j]>topo[idown[i]][jup[j]])
       tot+=pow((topo[i][j]-topo[idown[i]][jup[j]])*oneoversqrt2,1.1);
-     if (topo[i][j]>topo[idown[i]][jdown[j]]) 
+     if (topo[i][j]>topo[idown[i]][jdown[j]])
       tot+=pow((topo[i][j]-topo[idown[i]][jdown[j]])*oneoversqrt2,1.1);
-     if (topo[i][j]>topo[iup[i]][j]) 
-      flow1[i][j]=pow(topo[i][j]-topo[iup[i]][j],1.1)/tot; 
+     if (topo[i][j]>topo[iup[i]][j])
+      flow1[i][j]=pow(topo[i][j]-topo[iup[i]][j],1.1)/tot;
        else flow1[i][j]=0;
-     if (topo[i][j]>topo[idown[i]][j]) 
-      flow2[i][j]=pow(topo[i][j]-topo[idown[i]][j],1.1)/tot; 
+     if (topo[i][j]>topo[idown[i]][j])
+      flow2[i][j]=pow(topo[i][j]-topo[idown[i]][j],1.1)/tot;
        else flow2[i][j]=0;
-     if (topo[i][j]>topo[i][jup[j]]) 
-      flow3[i][j]=pow(topo[i][j]-topo[i][jup[j]],1.1)/tot; 
+     if (topo[i][j]>topo[i][jup[j]])
+      flow3[i][j]=pow(topo[i][j]-topo[i][jup[j]],1.1)/tot;
        else flow3[i][j]=0;
-     if (topo[i][j]>topo[i][jdown[j]]) 
-      flow4[i][j]=pow(topo[i][j]-topo[i][jdown[j]],1.1)/tot; 
+     if (topo[i][j]>topo[i][jdown[j]])
+      flow4[i][j]=pow(topo[i][j]-topo[i][jdown[j]],1.1)/tot;
        else flow4[i][j]=0;
-     if (topo[i][j]>topo[iup[i]][jup[j]]) 
+     if (topo[i][j]>topo[iup[i]][jup[j]])
       flow5[i][j]=pow((topo[i][j]-topo[iup[i]][jup[j]])*oneoversqrt2,1.1)/tot;
        else flow5[i][j]=0;
-     if (topo[i][j]>topo[iup[i]][jdown[j]]) 
+     if (topo[i][j]>topo[iup[i]][jdown[j]])
       flow6[i][j]=pow((topo[i][j]-topo[iup[i]][jdown[j]])*oneoversqrt2,1.1)/tot;
        else flow6[i][j]=0;
-     if (topo[i][j]>topo[idown[i]][jup[j]]) 
+     if (topo[i][j]>topo[idown[i]][jup[j]])
       flow7[i][j]=pow((topo[i][j]-topo[idown[i]][jup[j]])*oneoversqrt2,1.1)/tot;
        else flow7[i][j]=0;
-     if (topo[i][j]>topo[idown[i]][jdown[j]]) 
+     if (topo[i][j]>topo[idown[i]][jdown[j]])
       flow8[i][j]=pow((topo[i][j]-topo[idown[i]][jdown[j]])*oneoversqrt2,1.1)/tot;
        else flow8[i][j]=0;
      flow[iup[i]][j]+=flow[i][j]*flow1[i][j];
@@ -359,11 +357,11 @@ int i,j;
      if (topo[i][jdown[j]]-topo[i][j]<down) down=topo[i][jdown[j]]-topo[i][j];
      if ((topo[iup[i]][jup[j]]-topo[i][j])*oneoversqrt2<down)
       down=(topo[iup[i]][jup[j]]-topo[i][j])*oneoversqrt2;
-     if ((topo[idown[i]][jup[j]]-topo[i][j])*oneoversqrt2<down) 
+     if ((topo[idown[i]][jup[j]]-topo[i][j])*oneoversqrt2<down)
       down=(topo[idown[i]][jup[j]]-topo[i][j])*oneoversqrt2;
-     if ((topo[iup[i]][jdown[j]]-topo[i][j])*oneoversqrt2<down) 
+     if ((topo[iup[i]][jdown[j]]-topo[i][j])*oneoversqrt2<down)
       down=(topo[iup[i]][jdown[j]]-topo[i][j])*oneoversqrt2;
-     if ((topo[idown[i]][jdown[j]]-topo[i][j])*oneoversqrt2<down) 
+     if ((topo[idown[i]][jdown[j]]-topo[i][j])*oneoversqrt2<down)
       down=(topo[idown[i]][jdown[j]]-topo[i][j])*oneoversqrt2;
      slope[i][j]=fabs(down)/deltax;
 }
@@ -395,11 +393,11 @@ void hillslopediffusioninit()
        if (i==lattice_size_x)
         {bx[i]=1;
          ax[i]=0;}}
-     for (j=1;j<=lattice_size_y;j++) 
+     for (j=1;j<=lattice_size_y;j++)
       {ay[j]=-term1;
        cy[j]=-term1;
        by[j]=4*term1+1;
-       if (j==1) 
+       if (j==1)
         {by[j]=1;
          cy[j]=0;}
        if (j==lattice_size_y)
@@ -438,21 +436,21 @@ void hillslopediffusioninit()
 void avalanche(i,j)
 int i,j;
 {
-     if (topo[iup[i]][j]-topo[i][j]>thresh) 
+     if (topo[iup[i]][j]-topo[i][j]>thresh)
       topo[iup[i]][j]=topo[i][j]+thresh;
      if (topo[idown[i]][j]-topo[i][j]>thresh)
       topo[idown[i]][j]=topo[i][j]+thresh;
-     if (topo[i][jup[j]]-topo[i][j]>thresh) 
+     if (topo[i][jup[j]]-topo[i][j]>thresh)
       topo[i][jup[j]]=topo[i][j]+thresh;
-     if (topo[i][jdown[j]]-topo[i][j]>thresh) 
+     if (topo[i][jdown[j]]-topo[i][j]>thresh)
       topo[i][jdown[j]]=topo[i][j]+thresh;
-     if (topo[iup[i]][jup[j]]-topo[i][j]>(thresh*sqrt2)) 
+     if (topo[iup[i]][jup[j]]-topo[i][j]>(thresh*sqrt2))
       topo[iup[i]][jup[j]]=topo[i][j]+thresh*sqrt2;
-     if (topo[iup[i]][jdown[j]]-topo[i][j]>(thresh*sqrt2))  
+     if (topo[iup[i]][jdown[j]]-topo[i][j]>(thresh*sqrt2))
       topo[iup[i]][jdown[j]]=topo[i][j]+thresh*sqrt2;
-     if (topo[idown[i]][jup[j]]-topo[i][j]>(thresh*sqrt2)) 
+     if (topo[idown[i]][jup[j]]-topo[i][j]>(thresh*sqrt2))
       topo[idown[i]][jup[j]]=topo[i][j]+thresh*sqrt2;
-     if (topo[idown[i]][jdown[j]]-topo[i][j]>(thresh*sqrt2)) 
+     if (topo[idown[i]][jdown[j]]-topo[i][j]>(thresh*sqrt2))
       topo[idown[i]][jdown[j]]=topo[i][j]+thresh*sqrt2;
 }
 
@@ -465,18 +463,18 @@ main()
      lattice_size_x=250;
      lattice_size_y=250;
      idum=-678;
-	 U=1;                /* m/kyr */
+     U=1;                /* m/kyr */
      K=0.05;             /* kyr^-1 */
      printinterval=100;
      deltax=200.0;       /* m */
      thresh=0.58*deltax; /* 30 deg */
      timestep=1;         /* kyr */
-     duration=200;
+     duration=100;
      setupgridneighbors();
      topo=matrix(1,lattice_size_x,1,lattice_size_y);
      topo2=matrix(1,lattice_size_x,1,lattice_size_y);
      topoold=matrix(1,lattice_size_x,1,lattice_size_y);
-     slope= matrix(1,lattice_size_x,1,lattice_size_y);
+     slope=matrix(1,lattice_size_x,1,lattice_size_y);
      flow=matrix(1,lattice_size_x,1,lattice_size_y);
      flow1=matrix(1,lattice_size_x,1,lattice_size_y);
      flow2=matrix(1,lattice_size_x,1,lattice_size_y);
@@ -494,7 +492,7 @@ main()
         topoold[i][j]=topo[i][j];
         flow[i][j]=1;}
      /*construct diffusional landscape for initial flow routing */
-	 for (step=1;step<=10;step++)
+     for (step=1;step<=10;step++)
       {hillslopediffusioninit();
        for (i=2;i<=lattice_size_x-1;i++)
         for (j=2;j<=lattice_size_y-1;j++)
@@ -538,7 +536,7 @@ main()
         for (j=2;j<=lattice_size_y-1;j++)
          {topo[i][j]+=U*timestep;
           topoold[i][j]+=U*timestep;}
-       /*perform upwind erosion*/ 
+       /*perform upwind erosion*/
        max=0;
        for (i=2;i<=lattice_size_x-1;i++)
         for (j=2;j<=lattice_size_y-1;j++)
@@ -546,7 +544,7 @@ main()
           deltah=timestep*K*sqrt(flow[i][j])*deltax*slope[i][j];
           topo[i][j]-=deltah;
           if (topo[i][j]<0) topo[i][j]=0;
-          if (K*sqrt(flow[i][j])>max) max=K*sqrt(flow[i][j]);}
+          if (K*sqrt(flow[i][j])*deltax>max) max=K*sqrt(flow[i][j])*deltax;}
        time+=timestep;
        if (max>0.3*deltax/timestep)
         {time-=timestep;
@@ -560,9 +558,9 @@ main()
           for (i=1;i<=lattice_size_x;i++)
            topoold[i][j]=topo[i][j];}
        if (time>printinterval)
-        {printinterval+=250;
+        {printinterval+=100;
          for (i=1;i<=lattice_size_x;i++)
           for (j=1;j<=lattice_size_y;j++)
            {fprintf(fp1,"%f\n",topo[i][j]);}}}
-       fclose(fp1);
+	   fclose(fp1);
 }
